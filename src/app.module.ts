@@ -18,6 +18,7 @@ import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard'
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -54,6 +55,7 @@ const ENV = process.env.NODE_ENV;
     JwtModule.registerAsync(jwtConfig.asProvider()),
     UploadsModule,
     MailModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [

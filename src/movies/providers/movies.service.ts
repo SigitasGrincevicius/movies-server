@@ -5,18 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
-import { CreateMovieDto } from './dtos/create-movie.dto';
+import { CreateMovieDto } from '../dtos/create-movie.dto';
 import { Repository } from 'typeorm';
-import { Movie } from './movie.entity';
+import { Movie } from '../movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GenresService } from 'src/genres/providers/genres.service';
-import { PatchMovieDto } from './dtos/patch-movie.dto';
+import { PatchMovieDto } from '../dtos/patch-movie.dto';
 import { Genre } from 'src/genres/genre.entity';
-import { GetMoviesDto } from './dtos/get-movies.dto';
+import { GetMoviesDto } from '../dtos/get-movies.dto';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
-import { ERROR_MESSAGES } from './constants/error-messages.constants';
-import { CreateMovieProvider } from './providers/create-movie.provider';
+import { ERROR_MESSAGES } from '../constants/error-messages.constants';
+import { CreateMovieProvider } from './create-movie.provider';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 @Injectable()
@@ -151,6 +151,17 @@ export class MoviesService {
       return await this.moviesRepository.save(movie);
     } catch (error) {
       this.logger.error('Error while updating the movie:', error.stack);
+      throw new InternalServerErrorException(
+        ERROR_MESSAGES.DATABASE_CONNECTION,
+      );
+    }
+  }
+
+  public async findOneById(movieId: string) {
+    try {
+      return await this.moviesRepository.findOne({ where: { id: movieId } });
+    } catch (error) {
+      this.logger.error('Error while fetching the movie:', error.stack);
       throw new InternalServerErrorException(
         ERROR_MESSAGES.DATABASE_CONNECTION,
       );

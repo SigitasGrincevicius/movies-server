@@ -8,15 +8,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { MoviesService } from './movies.service';
+import { MoviesService } from './providers/movies.service';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMovieDto } from './dtos/create-movie.dto';
 import { PatchMovieDto } from './dtos/patch-movie.dto';
 import { GetMoviesDto } from './dtos/get-movies.dto';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
-import { AuthType } from 'src/auth/enums/auth-type.enum';
-import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('movies')
 @ApiTags('Movies')

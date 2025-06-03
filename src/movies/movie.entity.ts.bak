@@ -1,4 +1,3 @@
-import { Favorite } from 'src/favorites/favorite.entity';
 import { Genre } from 'src/genres/genre.entity';
 import { User } from 'src/users/user.entity';
 import {
@@ -8,7 +7,6 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -71,8 +69,6 @@ export class Movie {
   })
   createdBy: User;
 
-  @OneToMany(() => Favorite, (favorite) => favorite.movie)
-  favorites?: Favorite[];
   @CreateDateColumn()
   createdDate: Date;
 

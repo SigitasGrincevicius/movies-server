@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MoviesService } from './movies.service';
+import { MoviesService } from './providers/movies.service';
 import { MoviesController } from './movies.controller';
 import { UsersModule } from 'src/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,5 +19,6 @@ import { MailModule } from 'src/mail/mail.module';
     TypeOrmModule.forFeature([Movie]),
     MailModule,
   ],
+  exports: [MoviesService],
 })
 export class MoviesModule {}
