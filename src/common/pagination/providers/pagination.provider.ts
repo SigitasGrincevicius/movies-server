@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PaginationQueryDto } from '../dtos/pagination-query.dto';
-import { ObjectLiteral, Repository } from 'typeorm';
+import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { Paginated } from '../interfaces/paginated.interface';
@@ -33,14 +33,28 @@ export class PaginationProvider {
   public async paginateQuery<T extends ObjectLiteral>(
     paginationQuery: PaginationQueryDto,
     repository: Repository<T>,
+    queryBuilder?: SelectQueryBuilder<T>,
   ): Promise<Paginated<T>> {
     const { page = 1, limit = 10 } = paginationQuery;
 
-    // Fetch paginated results and total item count
-    let [results, totalItems] = await repository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    let results: T[];
+    let totalItems: number;
+
+    if (queryBuilder) {
+      // Use QueryBuilder for pagination
+      results = await queryBuilder
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getMany();
+
+      totalItems = await queryBuilder.getCount();
+    } else {
+      // Use repository for pagination
+      [results, totalItems] = await repository.findAndCount({
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+    }
 
     /**
      * Calculating pagination metadata

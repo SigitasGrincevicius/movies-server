@@ -1,15 +1,21 @@
-import { IsDate, IsOptional } from 'class-validator';
+import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IntersectionType } from '@nestjs/mapped-types';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-query.dto';
+import { MovieSortBy } from '../enums/movies-sort-by.enum';
+import { SortDirection } from '../enums/sort-direction.enum';
 
 class getMoviesBaseDto {
-  @IsDate()
   @IsOptional()
-  startDate?: Date;
+  @IsString()
+  title?: string;
 
-  @IsDate()
   @IsOptional()
-  endDate?: Date;
+  @IsEnum(MovieSortBy)
+  sortBy?: MovieSortBy;
+
+  @IsOptional()
+  @IsEnum(SortDirection)
+  direction?: SortDirection;
 }
 
 export class GetMoviesDto extends IntersectionType(
