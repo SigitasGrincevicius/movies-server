@@ -1,5 +1,5 @@
 export enum MovieSortBy {
   TITLE = 'title',
-  RELEASE_DATE = 'releaseDate',
+  RELEASE_YEAR = 'releaseYear',
   RATING = 'rating',
 }

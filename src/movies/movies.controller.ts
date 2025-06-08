@@ -29,12 +29,9 @@ export class MoviesController {
   /**
    * GET localhost:3000/movies/:userId
    */
-  @Get('/{:userId}')
-  public async getMovies(
-    @Param('userId') userId: string,
-    @Query() movieQuery: GetMoviesDto,
-  ) {
-    return await this.moviesService.findAll(movieQuery, userId);
+  @Get()
+  public async getMovies(@Query() getMoviesDto: GetMoviesDto) {
+    return await this.moviesService.findAll(getMoviesDto);
   }
 
   @ApiOperation({

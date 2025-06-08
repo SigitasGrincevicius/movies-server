@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
 import { CreateMovieDto } from '../dtos/create-movie.dto';
-import { Repository } from 'typeorm';
+import { QueryBuilder, Repository } from 'typeorm';
 import { Movie } from '../movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GenresService } from 'src/genres/providers/genres.service';
@@ -18,6 +18,7 @@ import { Paginated } from 'src/common/pagination/interfaces/paginated.interface'
 import { ERROR_MESSAGES } from '../constants/error-messages.constants';
 import { CreateMovieProvider } from './create-movie.provider';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { SortDirection } from '../enums/sort-direction.enum';
 
 @Injectable()
 export class MoviesService {
@@ -68,22 +69,40 @@ export class MoviesService {
     return movie;
   }
 
-  public async findAll(
-    movieQuery: GetMoviesDto,
-    userId: string,
-  ): Promise<Paginated<Movie>> {
-    this.logger.debug(`Starting findAll method with data, userId: ${userId}`);
-
-    const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND(userId));
-    }
+  public async findAll(getMoviesDto: GetMoviesDto): Promise<Paginated<Movie>> {
+    this.logger.debug(
+      `Starting findAll method with data, userId: ${JSON.stringify(getMoviesDto)}`,
+    );
 
     try {
-      const { page = 1, limit = 10 } = movieQuery;
+      const {
+        page = 1,
+        limit = 10,
+        title,
+        sortBy = 'title',
+        direction,
+      } = getMoviesDto;
+
+      // Build query with optional search and sorting
+      let queryBuilder = this.moviesRepository.createQueryBuilder('movie');
+
+      if (title) {
+        queryBuilder = queryBuilder.where('Lower(movie.title) LIKE :title', {
+          title: `%${title.toLowerCase()}%`,
+        });
+      }
+
+      // Only allow sorting by allowed fields
+      const allowedSortFields = ['title', 'releaseYear', 'rating'];
+      const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'title';
+      const sortDir = direction === SortDirection.DESC ? 'DESC' : 'ASC';
+
+      queryBuilder = queryBuilder.orderBy(`movie.${sortField}`, sortDir);
+
       return await this.paginationProvider.paginateQuery(
         { page, limit },
         this.moviesRepository,
+        queryBuilder,
       );
     } catch (error) {
       this.logger.error('Error retrieving movies:', error.stack);
