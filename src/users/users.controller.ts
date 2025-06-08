@@ -9,6 +9,7 @@ import {
   Patch,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Req,
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
@@ -18,6 +19,8 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateManyUsersDto } from './dtos/create-many-users.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { Request } from 'express';
+import { GetUsersDto } from './dtos/get-users.dto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -37,8 +40,22 @@ export class UsersController {
     status: 200,
     description: 'User fetched successfully based on the parameter',
   })
-  public getUsers(@Param() getUsersParamDto: GetUsersParamDto) {
+  public getUser(@Param() getUsersParamDto: GetUsersParamDto) {
     return this.usersService.findOneById(getUsersParamDto.id);
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Fetches a registered user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User fetched successfully based on the parameter',
+  })
+  public getUsers(@Query() getUsersDto: GetUsersDto, @Req() req: Request) {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const originalUrl = req.originalUrl;
+    return this.usersService.findAll(getUsersDto, baseUrl, originalUrl);
   }
 
   /*

@@ -69,9 +69,13 @@ export class MoviesService {
     return movie;
   }
 
-  public async findAll(getMoviesDto: GetMoviesDto): Promise<Paginated<Movie>> {
+  public async findAll(
+    getMoviesDto: GetMoviesDto,
+    baseUrl: string,
+    originalUrl: string,
+  ): Promise<Paginated<Movie>> {
     this.logger.debug(
-      `Starting findAll method with data, userId: ${JSON.stringify(getMoviesDto)}`,
+      `Starting findAll method with data, getMoviesDto: ${JSON.stringify(getMoviesDto)}`,
     );
 
     try {
@@ -103,6 +107,8 @@ export class MoviesService {
         { page, limit },
         this.moviesRepository,
         queryBuilder,
+        baseUrl,
+        originalUrl,
       );
     } catch (error) {
       this.logger.error('Error retrieving movies:', error.stack);

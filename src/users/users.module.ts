@@ -10,6 +10,7 @@ import { FindOneUserByEmailProvider } from './providers/find-one-user-by-email.p
 import { FindOneByGoogleIdProvider } from './providers/find-one-by-google-id.provider';
 import { CreateGoogleUserProvider } from './providers/create-google-user.provider';
 import { MailService } from 'src/mail/providers/mail.service';
+import { PaginationModule } from 'src/common/pagination/pagination.module';
 
 @Module({
   controllers: [UsersController],
@@ -26,6 +27,7 @@ import { MailService } from 'src/mail/providers/mail.service';
   imports: [
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([User]),
+    PaginationModule,
   ],
 })
 export class UsersModule {}

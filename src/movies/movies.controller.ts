@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { MoviesService } from './providers/movies.service';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { CreateMovieDto } from './dtos/create-movie.dto';
 import { PatchMovieDto } from './dtos/patch-movie.dto';
 import { GetMoviesDto } from './dtos/get-movies.dto';
@@ -30,8 +32,14 @@ export class MoviesController {
    * GET localhost:3000/movies/:userId
    */
   @Get()
-  public async getMovies(@Query() getMoviesDto: GetMoviesDto) {
-    return await this.moviesService.findAll(getMoviesDto);
+  public async getMovies(
+    @Query() getMoviesDto: GetMoviesDto,
+    @Req() req: Request,
+  ) {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const originalUrl = req.originalUrl;
+    
+    return await this.moviesService.findAll(getMoviesDto, baseUrl, originalUrl);
   }
 
   @ApiOperation({
