@@ -9,5 +9,6 @@ import { Upload } from './upload.entity';
   controllers: [UploadsController],
   providers: [UploadsService, UploadToAwsProvider],
   imports: [TypeOrmModule.forFeature([Upload])],
+  exports: [UploadsService],
 })
 export class UploadsModule {}

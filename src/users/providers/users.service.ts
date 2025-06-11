@@ -89,7 +89,6 @@ export class UsersService {
     baseUrl: string,
     originalUrl: string,
   ) {
-    console.log('Pasileidau');
     this.logger.debug(`
       Starting findAll method with data, getUsersDto: ${JSON.stringify(getUsersDto)}
       `);

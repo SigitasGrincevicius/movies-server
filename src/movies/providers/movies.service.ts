@@ -19,6 +19,7 @@ import { ERROR_MESSAGES } from '../constants/error-messages.constants';
 import { CreateMovieProvider } from './create-movie.provider';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { SortDirection } from '../enums/sort-direction.enum';
+import { UploadsService } from 'src/uploads/providers/uploads.service';
 
 @Injectable()
 export class MoviesService {
@@ -44,6 +45,10 @@ export class MoviesService {
      * Inject createMoviesProvider
      */
     private readonly createMovieProvider: CreateMovieProvider,
+    /**
+     * Inject uploadsService
+     */
+    private readonly uploadsService: UploadsService,
   ) {}
 
   private readonly logger = new Logger(MoviesService.name);
@@ -91,9 +96,11 @@ export class MoviesService {
       let queryBuilder = this.moviesRepository.createQueryBuilder('movie');
 
       if (title) {
-        queryBuilder = queryBuilder.where('Lower(movie.title) LIKE :title', {
-          title: `%${title.toLowerCase()}%`,
-        });
+        queryBuilder = queryBuilder
+          .where('Lower(movie.title) LIKE :title', {
+            title: `%${title.toLowerCase()}%`,
+          })
+          .leftJoinAndSelect('movie.comments', 'comment');
       }
 
       // Only allow sorting by allowed fields
@@ -143,6 +150,17 @@ export class MoviesService {
       );
     }
     return movie;
+  }
+
+  public async uploadImageToS3(file: Express.Multer.File) {
+    try {
+      return (await this.uploadsService.uploadFile(file)).path;
+    } catch (error) {
+      this.logger.error('File upload error:', error.stack);
+      throw new InternalServerErrorException(
+        'Could not upload file. Please try again later.',
+      );
+    }
   }
 
   /**

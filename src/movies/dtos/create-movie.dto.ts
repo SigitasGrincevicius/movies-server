@@ -87,4 +87,8 @@ export class CreateMovieDto {
   @IsUrl()
   @IsOptional()
   imageUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  file?: string;
 }

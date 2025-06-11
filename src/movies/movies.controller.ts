@@ -8,6 +8,8 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { MoviesService } from './providers/movies.service';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -17,6 +19,7 @@ import { PatchMovieDto } from './dtos/patch-movie.dto';
 import { GetMoviesDto } from './dtos/get-movies.dto';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('movies')
 @ApiTags('Movies')
@@ -38,7 +41,7 @@ export class MoviesController {
   ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const originalUrl = req.originalUrl;
-    
+
     return await this.moviesService.findAll(getMoviesDto, baseUrl, originalUrl);
   }
 
@@ -54,11 +57,17 @@ export class MoviesController {
     type: CreateMovieDto,
   })
   @Post()
-  public createMovie(
+  @UseInterceptors(FileInterceptor('file'))
+  public async createMovie(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createMovieDto: CreateMovieDto,
     @ActiveUser() user: ActiveUserData,
   ) {
-    console.log(user);
+    if (file) {
+      // Upload to S3 and set imageUrl
+      createMovieDto.imageUrl = await this.moviesService.uploadImageToS3(file);
+    }
+    
     return this.moviesService.create(createMovieDto, user);
   }
 

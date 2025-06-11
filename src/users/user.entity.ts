@@ -1,5 +1,4 @@
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,6 +9,8 @@ import {
 import { Movie } from 'src/movies/movie.entity';
 import { Exclude } from 'class-transformer';
 import { Favorite } from 'src/favorites/favorite.entity';
+import { Comment } from 'src/comments/comment.entity';
+import { UserRole } from './enums/user-role.enum';
 
 @Entity()
 export class User {
@@ -53,11 +54,23 @@ export class User {
   @Exclude()
   googleId?: string;
 
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.User,
+  })
+  @Exclude()
+  role: UserRole;
+
   @OneToMany(() => Movie, (movie) => movie.createdBy)
   movies?: Movie[]; // List of movies created by the user
 
+  @OneToMany(() => Comment, (comment) => comment.createdBy)
+  comments?: Comment[];
+
   @OneToMany(() => Favorite, (favorite) => favorite.movie)
   favorites?: Favorite[];
+  
   @CreateDateColumn()
   createdDate: Date;
 

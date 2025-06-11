@@ -19,6 +19,7 @@ import { AuthenticationGuard } from './auth/guards/authentication/authentication
 import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { CommentsModule } from './comments/comments.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -56,6 +57,7 @@ const ENV = process.env.NODE_ENV;
     UploadsModule,
     MailModule,
     FavoritesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

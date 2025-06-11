@@ -1,6 +1,7 @@
 import { Favorite } from 'src/favorites/favorite.entity';
 import { Genre } from 'src/genres/genre.entity';
 import { User } from 'src/users/user.entity';
+import { Comment } from 'src/comments/comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -64,6 +65,12 @@ export class Movie {
   @ManyToMany(() => Genre, (genre) => genre.movies, { eager: true })
   @JoinTable()
   genres: Genre[];
+
+  @OneToMany(() => Comment, (comment) => comment.movie, {
+    nullable: true,
+    eager: true,
+  })
+  comments: Comment[];
 
   @ManyToOne(() => User, (user) => user.movies, {
     nullable: false,

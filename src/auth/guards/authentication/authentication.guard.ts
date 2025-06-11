@@ -22,6 +22,7 @@ export class AuthenticationGuard implements CanActivate {
     private readonly accessTokenGuard: AccessTokenGuard,
   ) {
     this.authTypeGuardMap = {
+      [AuthType.Admin]: this.accessTokenGuard,
       [AuthType.Bearer]: this.accessTokenGuard,
       [AuthType.None]: { canActivate: () => true },
     };
