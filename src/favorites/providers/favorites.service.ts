@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Favorite } from '../favorite.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
-import { MoviesService } from 'src/movies/providers/movies.service'; 
+import { MoviesService } from 'src/movies/providers/movies.service';
 import { Movie } from 'src/movies/movie.entity';
 import { UsersService } from 'src/users/providers/users.service';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
@@ -126,7 +126,8 @@ export class FavoritesService {
     }
   }
 
-  public async deleteFavorite(movieId: string, userId: string) {
+  public async deleteFavorite(movieId: string, userData: ActiveUserData) {
+    const { sub: userId } = userData;
     this.logger.debug(
       `User ${userId} is deleting movie ${movieId} from favorites`,
     );

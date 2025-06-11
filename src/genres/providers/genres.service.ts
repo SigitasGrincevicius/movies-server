@@ -1,16 +1,21 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { In, Repository, IsNull } from 'typeorm';
 import { Genre } from '../genre.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateGenreDto } from '../dtos/create-genre.dto';
 import { PatchGenreDto } from '../dtos/patch-genre.dto';
 
+import { Logger } from '@nestjs/common';
+
 @Injectable()
 export class GenresService {
+  private readonly logger = new Logger(GenresService.name);
+
   constructor(
     /**
      * Inject genresRepository
@@ -38,28 +43,51 @@ export class GenresService {
     return newGenre;
   }
 
-  public async updateGenre(patchGenreDto: PatchGenreDto) {
-    // Find the genre by ID
-    const { id, ...genreUpdate } = patchGenreDto;
-    const genre = await this.genresRepository.findOne({
-      where: { id },
-    });
+  public async findOneById(genreId: string) {
+    try {
+      // Find the genre by ID
+      const genre = await this.genresRepository.findOne({
+        where: { id: genreId, deletedAt: IsNull() },
+      });
+      return genre;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching genre with id ${genreId}: ${error.message}`,
+      );
+      throw new InternalServerErrorException(
+        `Failed to fetch genre with id ${genreId}. Please try again later.`,
+      );
+    }
+  }
+
+  public async updateGenre(genreId: string, patchGenreDto: PatchGenreDto) {
+    const genre = await this.findOneById(genreId);
     if (!genre) {
-      throw new NotFoundException(`Genre with ID "${id}" not found"`);
+      throw new NotFoundException(`Genre with ID '${genreId}' not found`);
     }
 
     // Update the genre's fields
-    Object.assign(genre, genreUpdate);
+    Object.assign(genre, patchGenreDto);
 
-    // Save the updated genre
-    const updatedGenre = await this.genresRepository.save(genre);
-
-    // Return the updated genre
-    return updatedGenre;
+    try {
+      // Save the updated genre
+      const updatedGenre = await this.genresRepository.save(genre);
+      // Return updated genre
+      return updatedGenre;
+    } catch (error) {
+      this.logger.error(
+        `Error saving genre with id ${genreId}: ${error.message}`,
+      );
+      throw new InternalServerErrorException(
+        `Failed to save genre with id ${genreId}. Please try again later.`,
+      );
+    }
   }
 
   public async getAllGenres() {
-    const allGenres = await this.genresRepository.find();
+    const allGenres = await this.genresRepository.find({
+      where: { deletedAt: IsNull() },
+    });
     return allGenres;
   }
 
@@ -67,9 +95,30 @@ export class GenresService {
     let results = await this.genresRepository.find({
       where: {
         id: In(genres),
+        deletedAt: IsNull(),
       },
     });
 
     return results;
+  }
+
+  public async deleteGenre(genreId: string) {
+    const genre = await this.findOneById(genreId);
+    if (!genre) {
+      throw new NotFoundException(`Genre with ID '${genreId}' not found`);
+    }
+
+    try {
+      // Perform soft delete
+      await this.genresRepository.softDelete(genreId);
+      return { successful: true, genreId };
+    } catch (error) {
+      this.logger.error(
+        `Error soft deleting genre with id ${genreId}: ${error.message}`,
+      );
+      throw new InternalServerErrorException(
+        `Failed to soft delete with id ${genreId}. Please try again later.`,
+      );
+    }
   }
 }

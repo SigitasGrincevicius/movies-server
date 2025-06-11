@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { GenresService } from './providers/genres.service';
 import { CreateGenreDto } from './dtos/create-genre.dto';
 import { PatchGenreDto } from './dtos/patch-genre.dto';
@@ -14,7 +22,6 @@ export class GenresController {
     private readonly genresService: GenresService,
   ) {}
 
-  @Auth(AuthType.Admin)
   @Get()
   public getAllGenres() {
     return this.genresService.getAllGenres();
@@ -25,8 +32,17 @@ export class GenresController {
     return this.genresService.createGenre(createGenreDto);
   }
 
-  @Patch()
-  public patchGenre(@Body() patchGenreDto: PatchGenreDto) {
-    return this.genresService.updateGenre(patchGenreDto);
+  @Patch(':genreId')
+  public patchGenre(
+    @Param('genreId') genreId: string,
+    @Body() patchGenreDto: PatchGenreDto,
+  ) {
+    return this.genresService.updateGenre(genreId, patchGenreDto);
+  }
+
+  @Auth(AuthType.Admin)
+  @Delete(':genreId')
+  public deleteGenre(@Param('genreID') genreId: string) {
+    return this.genresService.deleteGenre(genreId);
   }
 }

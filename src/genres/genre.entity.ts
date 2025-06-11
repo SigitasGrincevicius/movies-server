@@ -2,6 +2,7 @@ import { Movie } from 'src/movies/movie.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToMany,
   PrimaryGeneratedColumn,
@@ -36,4 +37,7 @@ export class Genre {
 
   @UpdateDateColumn()
   updatedDate: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
