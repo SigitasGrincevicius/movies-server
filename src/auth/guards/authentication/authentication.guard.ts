@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -8,7 +9,11 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AccessTokenGuard } from '../access-token/access-token.guard';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
-import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
+import {
+  AUTH_TYPE_KEY,
+  REQUEST_USER_KEY,
+} from 'src/auth/constants/auth.constants';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -16,7 +21,7 @@ export class AuthenticationGuard implements CanActivate {
     AuthType,
     CanActivate | CanActivate[]
   >;
-  
+
   constructor(
     private readonly reflector: Reflector,
     private readonly accessTokenGuard: AccessTokenGuard,
@@ -27,7 +32,7 @@ export class AuthenticationGuard implements CanActivate {
       [AuthType.None]: { canActivate: () => true },
     };
   }
-  
+
   private readonly logger = new Logger(AuthenticationGuard.name);
   private static readonly defaultAuthType = AuthType.Bearer;
 
@@ -55,6 +60,14 @@ export class AuthenticationGuard implements CanActivate {
         this.logger.error('Guard error:', err);
       });
       if (canActivate) {
+        // If Admin is required, check user role
+        if (authTypes.includes(AuthType.Admin)) {
+          const request = context.switchToHttp().getRequest();
+          const user = request[REQUEST_USER_KEY];
+          if (!user || user.role != UserRole.Admin) {
+            throw new ForbiddenException('Admin role is required');
+          }
+        }
         return true;
       }
     }
