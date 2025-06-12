@@ -13,6 +13,7 @@ import { PatchGenreDto } from './dtos/patch-genre.dto';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 
+@Auth(AuthType.Admin)
 @Controller('genres')
 export class GenresController {
   constructor(
@@ -22,6 +23,7 @@ export class GenresController {
     private readonly genresService: GenresService,
   ) {}
 
+  @Auth(AuthType.Bearer)
   @Get()
   public getAllGenres() {
     return this.genresService.getAllGenres();
@@ -40,9 +42,8 @@ export class GenresController {
     return this.genresService.updateGenre(genreId, patchGenreDto);
   }
 
-  @Auth(AuthType.Admin)
   @Delete(':genreId')
-  public deleteGenre(@Param('genreID') genreId: string) {
+  public deleteGenre(@Param('genreId') genreId: string) {
     return this.genresService.deleteGenre(genreId);
   }
 }

@@ -52,6 +52,7 @@ export class GenerateTokensProvider {
       // Generate the access token
       this.signToken(user.id, this.jwtConfiguration.accessTokenTTL, {
         email: user.email,
+        role: user.role,
       }),
       // Generate the refresh token
       this.signToken(user.id, this.jwtConfiguration.refreshTokenTTL),

@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -132,15 +133,23 @@ export class MoviesService {
     return await this.createMovieProvider.create(createMovieDto, user);
   }
 
-  public async delete(id: string): Promise<Movie> {
+  public async delete(id: string, userData: ActiveUserData) {
     this.logger.debug(`Starting delete method with data, id: ${id}`);
 
+    const { sub: loggedUserId, role } = userData;
     const movie = await this.findMovieById(id);
 
     if (!movie) {
       this.logger.error(`Movie with ID ${id} not found during delete`);
       throw new NotFoundException(ERROR_MESSAGES.MOVIE_NOT_FOUND(id));
     }
+
+    if (movie.createdBy.id !== loggedUserId && role !== 'admin') {
+      throw new ForbiddenException(
+        'You are not allowed to delete this movie. Only creator and an admin can update it.',
+      );
+    }
+
     try {
       await this.moviesRepository.delete(id);
     } catch (error) {
@@ -149,7 +158,7 @@ export class MoviesService {
         ERROR_MESSAGES.DATABASE_CONNECTION,
       );
     }
-    return movie;
+    return { successful: true, id };
   }
 
   public async uploadImageToS3(file: Express.Multer.File) {
@@ -171,8 +180,12 @@ export class MoviesService {
    * @throws NotFoundException if the movie does not exist.
    * @throws InternalServerErrorException if the update fails.
    */
-  public async update(patchMovieDto: PatchMovieDto): Promise<Movie> {
-    const { id } = patchMovieDto;
+  public async update(
+    id: string,
+    patchMovieDto: PatchMovieDto,
+    userData: ActiveUserData,
+  ): Promise<Movie> {
+    const { sub: loggedUserId, role } = userData;
     this.logger.debug(`Starting update method for movie ID: ${id}`);
 
     const movie = await this.findMovieById(id);
@@ -180,6 +193,12 @@ export class MoviesService {
     if (!movie) {
       this.logger.error(`Movie with ID ${id} not found during update`);
       throw new NotFoundException(ERROR_MESSAGES.MOVIE_NOT_FOUND(id));
+    }
+
+    if (movie.createdBy.id !== loggedUserId && role !== 'admin') {
+      throw new ForbiddenException(
+        'You are not allowed to edit this movie. Only creator and an admin can update it.',
+      );
     }
 
     // If genres are being updated, validate them

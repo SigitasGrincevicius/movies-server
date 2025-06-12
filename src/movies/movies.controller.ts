@@ -61,14 +61,14 @@ export class MoviesController {
   public async createMovie(
     @UploadedFile() file: Express.Multer.File,
     @Body() createMovieDto: CreateMovieDto,
-    @ActiveUser() user: ActiveUserData,
+    @ActiveUser() userData: ActiveUserData,
   ) {
     if (file) {
       // Upload to S3 and set imageUrl
       createMovieDto.imageUrl = await this.moviesService.uploadImageToS3(file);
     }
-    
-    return this.moviesService.create(createMovieDto, user);
+
+    return this.moviesService.create(createMovieDto, userData);
   }
 
   @ApiOperation({
@@ -82,13 +82,20 @@ export class MoviesController {
     description: 'The details of the movie to update',
     type: PatchMovieDto,
   })
-  @Patch()
-  public updateMovie(@Body() patchMovieDto: PatchMovieDto) {
-    return this.moviesService.update(patchMovieDto);
+  @Patch(':id')
+  public updateMovie(
+    @Param('id') id: string,
+    @Body() patchMovieDto: PatchMovieDto,
+    @ActiveUser() userData: ActiveUserData,
+  ) {
+    return this.moviesService.update(id, patchMovieDto, userData);
   }
 
-  @Delete('/:id')
-  public async deleteMovie(@Param('id') id: string) {
-    return await this.moviesService.delete(id);
+  @Delete(':id')
+  public async deleteMovie(
+    @Param('id') id: string,
+    @ActiveUser() userData: ActiveUserData,
+  ) {
+    return await this.moviesService.delete(id, userData);
   }
 }

@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -70,10 +71,13 @@ export class User {
 
   @OneToMany(() => Favorite, (favorite) => favorite.movie)
   favorites?: Favorite[];
-  
+
   @CreateDateColumn()
   createdDate: Date;
 
   @UpdateDateColumn()
   updatedDate: Date;
+
+  @DeleteDateColumn()
+  deletedDate: Date;
 }

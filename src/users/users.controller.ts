@@ -10,13 +10,13 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { UsersService } from './providers/users.service';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateManyUsersDto } from './dtos/create-many-users.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Request } from 'express';
@@ -32,7 +32,7 @@ export class UsersController {
     private readonly usersService: UsersService,
   ) {}
 
-  @Get('/:id')
+  @Get(':id')
   @ApiOperation({
     summary: 'Fetches a registered user',
   })
@@ -46,7 +46,7 @@ export class UsersController {
 
   @Get()
   @ApiOperation({
-    summary: 'Fetches a registered user',
+    summary: 'Fetches a registered users',
   })
   @ApiResponse({
     status: 200,
@@ -58,37 +58,6 @@ export class UsersController {
     return this.usersService.findAll(getUsersDto, baseUrl, originalUrl);
   }
 
-  /*
-  @Get('/{:id}')
-  @ApiOperation({
-    summary: 'Fetches a list of registered users on the application',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Users fetched successfully based on the query',
-  })
-  @ApiQuery({
-    name: 'limit',
-    type: 'number',
-    required: false,
-    description: 'The number of entries returned per query',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'page',
-    type: 'number',
-    required: false,
-    description: 'The position of the page number that you want to return',
-    example: 1,
-  })
-  public getUsers(
-    @Param() getUsersParamDto: GetUsersParamDto,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-  ) {
-    return this.usersService.findAll(getUsersParamDto, limit, page);
-  } */
-
   @Post()
   // @SetMetadata('authType', 'None')
   @Auth(AuthType.None)
@@ -96,13 +65,17 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Post('create-many')
-  public createManyUsers(@Body() createManyUsersDto: CreateManyUsersDto) {
-    return this.usersService.createMany(createManyUsersDto);
-  }
-
+  @Auth(AuthType.Admin)
   @Patch()
   public patchUser(@Body() patchUserDto: PatchUserDto) {
     return patchUserDto;
   }
+
+  @Auth(AuthType.Admin)
+  @Delete(':id')
+  public deleteUser(@Param() getUsersParamDto: GetUsersParamDto) {
+    return this.usersService.deleteUser(getUsersParamDto.id);
+  }
+
+  // Add grant admin endpoint
 }

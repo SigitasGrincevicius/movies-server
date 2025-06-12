@@ -12,8 +12,6 @@ import { AuthService } from 'src/auth/providers/auth.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
-import { UsersCreateManyProvider } from './users-create-many.provider';
-import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 import { CreateUserProvider } from './create-user.provider';
 import { Repository } from 'typeorm';
 import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
@@ -44,10 +42,6 @@ export class UsersService {
      */
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    /**
-     * Inject usersCreateManyProvider
-     */
-    private readonly usersCreateManyUsers: UsersCreateManyProvider,
     /**
      * Inject createUserProvider
      */
@@ -145,8 +139,24 @@ export class UsersService {
     return user;
   }
 
-  public async createMany(createManyUsersDto: CreateManyUsersDto) {
-    return await this.usersCreateManyUsers.createMany(createManyUsersDto);
+  public async deleteUser(userId: string) {
+    // Will use soft delete
+    this.logger.debug(`Starting deleteUser method, id: ${userId}`);
+
+    try {
+      const user = await this.findOneById(userId);
+      this.usersRepository.softDelete(userId);
+    } catch (error) {
+      this.logger.error(
+        `Could not soft delete user, id: ${userId}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException(
+        'Could not soft delete user. Please try again later.',
+      );
+    }
+
+    return { successful: true, userId };
   }
 
   public async findOneByEmail(email: string) {

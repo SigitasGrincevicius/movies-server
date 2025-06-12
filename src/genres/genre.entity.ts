@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Movie } from 'src/movies/movie.entity';
 import {
   Column,
@@ -39,5 +40,6 @@ export class Genre {
   updatedDate: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt?: Date;
 }
