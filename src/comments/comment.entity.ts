@@ -24,6 +24,7 @@ export class Comment {
   createdBy: User;
 
   @ManyToOne(() => Movie, (movie) => movie.comments, {
+    onDelete: 'CASCADE',
     nullable: false,
   })
   movie: Movie;

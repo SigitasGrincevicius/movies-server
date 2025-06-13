@@ -27,6 +27,7 @@ import { PaginationProvider } from 'src/common/pagination/providers/pagination.p
 import { Logger } from '@nestjs/common';
 import { SortDirection } from 'src/movies/enums/sort-direction.enum';
 import { ERROR_MESSAGES } from 'src/movies/constants/error-messages.constants';
+import { UserRole } from '../enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -169,5 +170,24 @@ export class UsersService {
 
   public async createGoogleUser(googleUser: GoogleUser) {
     return await this.createGoogleUserProvider.createGoogleUser(googleUser);
+  }
+
+  public async grantAdminRole(userId: string) {
+    this.logger.debug(`Starting grantAdminRole method, id: ${userId}`);
+
+    try {
+      let user = await this.findOneById(userId);
+      user.role = UserRole.Admin;
+      await this.usersRepository.save(user);
+      return { successful: true, userId, newRole: user.role };
+    } catch (error) {
+      this.logger.error(
+        `Could not update user role, id: ${userId}`,
+        error.stack,
+      );
+      throw new InternalServerErrorException(
+        'Could not update user role. Please try again later.',
+      );
+    }
   }
 }

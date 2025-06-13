@@ -13,6 +13,8 @@ import { Comment } from '../comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ERROR_MESSAGES } from 'src/movies/constants/error-messages.constants';
 import { UpdateCommentDto } from '../dtos/update-comment.dto';
+import { UserRole } from 'src/users/enums/user-role.enum';
+import { GetCommentsByMovieDto } from '../dtos/get-comments-by-movie.dto';
 
 @Injectable()
 export class CommentsService {
@@ -73,7 +75,10 @@ export class CommentsService {
     let comment = await this.findOneById(id);
 
     // Check if the user is the creator of the comment
-    if (comment.createdBy.id !== userData.sub) {
+    if (
+      comment.createdBy.id !== userData.sub &&
+      userData.role !== UserRole.Admin
+    ) {
       throw new ForbiddenException(
         'You are not allowed to delete this comment',
       );
@@ -92,14 +97,17 @@ export class CommentsService {
 
   public async updateComment(
     id: string,
-    userData: ActiveUserData,
     updateCommentDto: UpdateCommentDto,
+    userData: ActiveUserData,
   ) {
     this.logger.debug(`Update comment with id: ${id} by user: ${userData}`);
     let comment = await this.findOneById(id);
 
     // Check if the user is the creator of the comment
-    if (comment.createdBy.id !== userData.sub) {
+    if (
+      comment.createdBy.id !== userData.sub &&
+      userData.role !== UserRole.Admin
+    ) {
       throw new ForbiddenException('You are not allowed to edit this comment');
     }
 
@@ -131,6 +139,38 @@ export class CommentsService {
       this.logger.error('Comment fetch error:', error.stack);
       throw new InternalServerErrorException(
         ERROR_MESSAGES.DATABASE_CONNECTION,
+      );
+    }
+  }
+
+  public async findByMovieId(movieId: string) {
+    this.logger.debug(`Method findByMovieId started, movieId: ${movieId}`);
+
+    try {
+      // Ensure the movie exists
+      const movie = this.moviesService.findOneById(movieId);
+    } catch (error) {
+      this.logger.error(`Error fetching movie, id: ${movieId}`);
+      throw new InternalServerErrorException(
+        'Could not fetch a movie. Please try again later.',
+      );
+    }
+
+    try {
+      // Find comments for the movie
+      const comments = await this.commentsRepository.find({
+        where: { movie: { id: movieId } },
+        relations: ['createdBy'],
+        order: { createdDate: 'DESC' },
+      });
+
+      return comments;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching comments for movie, movieId: ${movieId}`,
+      );
+      throw new InternalServerErrorException(
+        'Could not fetch comments for this movie. Please try again later.',
       );
     }
   }

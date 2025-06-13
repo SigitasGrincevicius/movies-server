@@ -65,7 +65,6 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Auth(AuthType.Admin)
   @Patch()
   public patchUser(@Body() patchUserDto: PatchUserDto) {
     return patchUserDto;
@@ -78,4 +77,9 @@ export class UsersController {
   }
 
   // Add grant admin endpoint
+  @Auth(AuthType.Admin)
+  @Patch(':id/grant-admin')
+  public async grantAdminRole(@Param() GetUsersParamDto: GetUsersParamDto) {
+    return this.usersService.grantAdminRole(GetUsersParamDto.id);
+  }
 }

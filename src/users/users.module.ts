@@ -4,7 +4,6 @@ import { UsersService } from './providers/users.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { UsersCreateManyProvider } from './providers/users-create-many.provider';
 import { CreateUserProvider } from './providers/create-user.provider';
 import { FindOneUserByEmailProvider } from './providers/find-one-user-by-email.provider';
 import { FindOneByGoogleIdProvider } from './providers/find-one-by-google-id.provider';
@@ -16,7 +15,6 @@ import { PaginationModule } from 'src/common/pagination/pagination.module';
   controllers: [UsersController],
   providers: [
     UsersService,
-    UsersCreateManyProvider,
     CreateUserProvider,
     FindOneUserByEmailProvider,
     FindOneByGoogleIdProvider,
